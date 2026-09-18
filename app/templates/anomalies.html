@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Router Anomalies</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>Router Anomalies</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<h2>Filters</h2>
+
+<form method="get" action="/anomalies">
+    Router:
+    <input type="text" name="router" value="{{ filters.get('router','') }}">
+
+    Reason:
+    <input type="text" name="reason" value="{{ filters.get('reason','') }}">
+
+    Min Score:
+    <input type="text" name="min_score" size="4" value="{{ filters.get('min_score','') }}">
+
+    Max Score:
+    <input type="text" name="max_score" size="4" value="{{ filters.get('max_score','') }}">
+
+    <button type="submit">Apply</button>
+</form>
+
+<hr>
+
+<h2>Anomaly Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Total Anomalies:</b> {{ intel.total_anomalies }}</div>
+        <div class="intel-item"><b>Unique Routers:</b> {{ intel.unique_routers }}</div>
+        <div class="intel-item"><b>Avg Score:</b> {{ "%.4f"|format(intel.avg_score) }}</div>
+        <div class="intel-item"><b>High Severity:</b> {{ intel.high_severity }}</div>
+
+        <div class="intel-item"><b>Top Reason:</b> {{ intel.top_reason }}</div>
+        <div class="intel-item"><b>Top ASN:</b> {{ intel.top_asn }}</div>
+        <div class="intel-item"><b>Top Country:</b> {{ intel.top_country }}</div>
+        <div class="intel-item"><b>Behavioral Outliers:</b> {{ intel.behavior_outliers }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<h2>Anomaly Analytics</h2>
+
+<h3>Anomaly Score Distribution</h3>
+<img src="/visualizations/charts/anomaly_distribution.png" width="600">
+
+<h3>Anomaly vs Risk Overlay</h3>
+<img src="/visualizations/charts/anomaly_risk_overlay.png" width="600">
+
+<h3>Anomaly vs Suspiciousness Overlay</h3>
+<img src="/visualizations/charts/anomaly_suspicious_overlay.png" width="600">
+
+<hr>
+
+<h2>Anomaly Map</h2>
+
+{% if intel.total_anomalies > 0 %}
+<iframe src="/visualizations/maps/anomaly_map.html"
+        width="100%" height="600"></iframe>
+{% else %}
+<p><b>No anomalies available for mapping.</b></p>
+{% endif %}
+
+<hr>
+
+<h2>Detected Anomalies (Page {{ page }} of {{ total_pages }})</h2>
+
+<table>
+    <tr>
+        <th>Router</th>
+        <th>Reason</th>
+        <th>Score</th>
+        <th>Timestamp</th>
+        <th>ASN</th>
+        <th>Country</th>
+        <th>Cluster</th>
+        <th>Details</th>
+    </tr>
+
+    {% if anomalies %}
+        {% for a in anomalies %}
+        <tr>
+            <td><a href="/router/{{ a.router_hash }}">{{ a.router_hash }}</a></td>
+            <td>{{ a.reason }}</td>
+            <td>{{ "%.4f"|format(a.anomaly_score) }}</td>
+            <td>{{ a.timestamp }}</td>
+            <td><a href="/asn/{{ a.asn }}">{{ a.asn }}</a></td>
+            <td>{{ a.country }}</td>
+            <td><a href="/cluster/{{ a.behavior_cluster }}">{{ a.behavior_cluster }}</a></td>
+            <td><a href="/behavior/{{ a.router_hash }}">Behavior</a></td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr><td colspan="8">No anomalies detected.</td></tr>
+    {% endif %}
+</table>
+
+<div style="margin-top:20px;">
+    {% if page > 1 %}
+        <a href="/anomalies?page={{ page - 1 }}&{{ filters_qs }}">Prev</a>
+    {% endif %}
+
+    &nbsp; Page {{ page }} of {{ total_pages }} &nbsp;
+
+    {% if page < total_pages %}
+        <a href="/anomalies?page={{ page + 1 }}&{{ filters_qs }}">Next</a>
+    {% endif %}
+</div>
+
+</body>
+</html>
+

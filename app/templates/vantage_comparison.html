@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vantage Point Comparison</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        .intel-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .intel-item {
+            background: #fafafa;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>Vantage Point Comparison</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/behavior">Behavior</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<div class="intel-box">
+    This project runs two independent implementations of I2P (the Java reference router and
+    i2pd, written in C++) as two separate vantage points on the network. Each builds its own
+    local netDb purely through organic peer gossip. Comparing what each one has actually
+    observed answers a real question: do different implementations see the same slice of the
+    network, or meaningfully different ones? A single vantage point can't answer this at all --
+    you'd have no way to know whether what you're measuring reflects the real network or just
+    that one router's blind spots.
+</div>
+
+<h2>Current Overlap</h2>
+
+<div class="intel-grid">
+    <div class="intel-item"><b>Seen by Java I2P only:</b> {{ stats.java_only }}</div>
+    <div class="intel-item"><b>Seen by i2pd only:</b> {{ stats.i2pd_only }}</div>
+    <div class="intel-item"><b>Seen by both:</b> {{ stats.both }}</div>
+    <div class="intel-item"><b>Total distinct routers observed:</b> {{ stats.total_either }}</div>
+</div>
+
+<div class="intel-box">
+    <b>Jaccard similarity index:</b> {{ "%.2f"|format(stats.jaccard_pct) }}%
+    (|seen by both| / |seen by either|). A value near 100% would mean the two vantage points
+    see essentially the same network; a low value means they're discovering largely different
+    routers.
+</div>
+
+<hr>
+
+<h2>Overlap Trend Over Time</h2>
+<p>Both routers may have initially bootstrapped from overlapping reseed servers, which could
+inflate apparent overlap in the first day or two before organic gossip diverges their views.
+If this trends downward over the collection window, that's a real, citable finding about how
+quickly the two implementations' views diverge -- not noise.</p>
+<img src="/visualizations/charts/vantage_overlap_trend.png" width="800">
+
+</body>
+</html>

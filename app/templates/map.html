@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Global Router Map</h2>
+
+<div id="map" style="height: 600px; width: 100%;"></div>
+
+<script>
+fetch("/api/map-data")
+    .then(response => response.json())
+    .then(data => {
+        const map = L.map('map').setView([20, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 6,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        data.forEach(router => {
+            L.circleMarker([router.lat, router.lon], {
+                radius: 4,
+                color: "cyan",
+                fillColor: "cyan",
+                fillOpacity: 0.7
+            })
+            .bindPopup(`<b>${router.ip}</b><br>${router.country}`)
+            .addTo(map);
+        });
+    });
+</script>
+
+{% endblock %}
+

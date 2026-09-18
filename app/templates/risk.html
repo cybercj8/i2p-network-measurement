@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Router Risk Intelligence</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>Router Risk Intelligence</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<h2>Filters</h2>
+
+<form method="get" action="/risk">
+    Router:
+    <input type="text" name="router" value="{{ filters.get('router','') }}">
+
+    ASN:
+    <input type="text" name="asn" value="{{ filters.get('asn','') }}">
+
+    Country:
+    <input type="text" name="country" value="{{ filters.get('country','') }}">
+
+    Min Risk:
+    <input type="text" name="min_risk" size="4" value="{{ filters.get('min_risk','') }}">
+
+    Max Risk:
+    <input type="text" name="max_risk" size="4" value="{{ filters.get('max_risk','') }}">
+
+    <button type="submit">Apply</button>
+</form>
+
+<hr>
+
+<h2>Risk Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Total Routers:</b> {{ intel.total_routers }}</div>
+        <div class="intel-item"><b>High‑Risk Routers:</b> {{ intel.high_risk }}</div>
+        <div class="intel-item"><b>Avg Risk:</b> {{ "%.4f"|format(intel.avg_risk) }}</div>
+        <div class="intel-item"><b>Avg Suspiciousness:</b> {{ "%.4f"|format(intel.avg_suspicious) }}</div>
+
+        <div class="intel-item"><b>Top Risk ASN:</b> {{ intel.top_asn }}</div>
+        <div class="intel-item"><b>Top Risk Country:</b> {{ intel.top_country }}</div>
+        <div class="intel-item"><b>Top Risk Cluster:</b> {{ intel.top_cluster }}</div>
+        <div class="intel-item"><b>Behavioral Outliers:</b> {{ intel.behavior_outliers }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<h2>Risk Analytics</h2>
+
+<h3>Risk Distribution</h3>
+<img src="/visualizations/charts/risk_distribution.png" width="600">
+
+<h3>Risk vs Suspiciousness</h3>
+<img src="/visualizations/charts/risk_suspicious_overlay.png" width="600">
+
+<h3>Risk vs Anomaly</h3>
+<img src="/visualizations/charts/risk_anomaly_overlay.png" width="600">
+
+<hr>
+
+<h2>Router Risk Scores (Page {{ page }} of {{ total_pages }})</h2>
+
+<table>
+    <tr>
+        <th>Router</th>
+        <th>Risk</th>
+        <th>Uptime</th>
+        <th>Bandwidth</th>
+        <th>Version</th>
+        <th>Cluster Outlier</th>
+        <th>Country Risk</th>
+        <th>ASN Risk</th>
+        <th>Suspicious</th>
+        <th>Details</th>
+    </tr>
+
+    {% for r in risks %}
+    <tr>
+        <td><a href="/router/{{ r.router_hash }}">{{ r.router_hash }}</a></td>
+        <td>{{ "%.4f"|format(r.risk_score) }}</td>
+        <td>{{ "%.4f"|format(r.uptime_anomaly) }}</td>
+        <td>{{ "%.4f"|format(r.bandwidth_anomaly) }}</td>
+        <td>{{ "%.4f"|format(r.version_risk) }}</td>
+        <td>{{ "%.4f"|format(r.cluster_outlier) }}</td>
+        <td>{{ "%.4f"|format(r.country_risk) }}</td>
+        <td>{{ "%.4f"|format(r.asn_risk) }}</td>
+        <td>{{ "%.4f"|format(r.suspiciousness) }}</td>
+        <td><a href="/risk/{{ r.router_hash }}">Details</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div style="margin-top:20px;">
+    {% if page > 1 %}
+        <a href="/risk?page={{ page - 1 }}&{{ filters_qs }}">Prev</a>
+    {% endif %}
+
+    &nbsp; Page {{ page }} of {{ total_pages }} &nbsp;
+
+    {% if page < total_pages %}
+        <a href="/risk?page={{ page + 1 }}&{{ filters_qs }}">Next</a>
+    {% endif %}
+</div>
+
+<hr>
+
+<h2>Risk Maps</h2>
+
+<h3>Risk Heatmap</h3>
+<iframe src="{{ maps.heat }}" width="100%" height="600"></iframe>
+
+<h3>Risk Map</h3>
+<iframe src="{{ maps.main }}" width="100%" height="600"></iframe>
+
+<h3>Risk–Anomaly Map</h3>
+<iframe src="{{ maps.anomaly }}" width="100%" height="600"></iframe>
+
+<h3>Risk–Behavior Map</h3>
+<iframe src="{{ maps.behavior }}" width="100%" height="600"></iframe>
+
+</body>
+</html>
+

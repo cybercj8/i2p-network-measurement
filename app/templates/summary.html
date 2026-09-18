@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Summary</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .finding { background: #fafafa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+<h1>Report Summary</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/behavior">Behavior</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<div class="intel-box">
+    A single citation-ready snapshot of this study's key numbers, pulled together from across
+    the dashboard so they don't need to be hunted down page by page when writing the report.
+    Every figure here links back to the page it came from. Re-check this page right before you
+    stop data collection for the final numbers to cite.
+    <br><br>
+    <a href="/export.csv">⬇ Download the full dataset (CSV)</a> -- one row per router, every
+    field used in this study's analysis. Raw IP addresses are deliberately excluded; ASN,
+    coarse geolocation, and every derived/computed field are included.
+</div>
+
+<h2>Collection Overview</h2>
+<div class="finding">
+    <b>{{ total_routers }}</b> distinct routers observed across <b>{{ total_asns }}</b> ASNs and
+    <b>{{ total_countries }}</b> countries, via two independent vantage points (Java I2P and
+    i2pd), over a collection window from <b>{{ first_seen }}</b> to <b>{{ last_seen }}</b>
+    (<b>{{ "%.1f"|format(collection_days) }} days</b>).
+</div>
+
+<h3>Top 5 Countries by Router Count</h3>
+<table>
+    <tr><th>Country</th><th>Routers</th></tr>
+    {% for c in top_countries %}
+    <tr><td>{{ c.country }}</td><td>{{ c.count }}</td></tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h2>Key Statistical Findings</h2>
+
+<div class="intel-box">
+    Three chi-square tests below share the same country groupings (version, floodfill,
+    bandwidth) -- each is also checked against a Bonferroni-corrected threshold of
+    alpha = {{ "%.4f"|format(chi2_result.bonferroni_alpha) }} (0.05 / 3) to control the
+    family-wise false-positive rate. Full discussion on <a href="/geo-correlation">Geo Correlations</a>.
+</div>
+
+{% if chi2_result %}
+<div class="finding">
+    <b>Country x version association:</b> chi-square test of independence, top
+    {{ chi2_result.n_countries }} countries, {{ chi2_result.n_versions }} distinct patch
+    versions. chi2 = {{ "%.2f"|format(chi2_result.chi2) }}, dof = {{ chi2_result.dof }},
+    p-value = {{ "%.4g"|format(chi2_result.p_value) }}
+    ({{ "statistically significant" if chi2_result.significant else "not statistically significant" }}
+    at p &lt; 0.05{{ ", survives Bonferroni correction" if chi2_result.significant_bonferroni else "" }}).
+    Effect size: Cramer's V = {{ "%.3f"|format(chi2_result.cramers_v) }}
+    ({{ chi2_result.effect_size_label }}).
+</div>
+{% endif %}
+
+{% if floodfill_chi2_result %}
+<div class="finding">
+    <b>Country x floodfill capability association:</b> chi-square test of independence, top
+    {{ floodfill_chi2_result.n_countries }} countries. chi2 = {{ "%.2f"|format(floodfill_chi2_result.chi2) }},
+    dof = {{ floodfill_chi2_result.dof }}, p-value = {{ "%.4g"|format(floodfill_chi2_result.p_value) }}
+    ({{ "statistically significant" if floodfill_chi2_result.significant else "not statistically significant" }}
+    at p &lt; 0.05{{ ", survives Bonferroni correction" if floodfill_chi2_result.significant_bonferroni else "" }}).
+    Effect size: Cramer's V = {{ "%.3f"|format(floodfill_chi2_result.cramers_v) }}
+    ({{ floodfill_chi2_result.effect_size_label }}).
+</div>
+{% endif %}
+
+{% if bandwidth_chi2_result %}
+<div class="finding">
+    <b>Country x bandwidth tier association:</b> chi-square test of independence, top
+    {{ bandwidth_chi2_result.n_countries }} countries, {{ bandwidth_chi2_result.n_categories }}
+    bandwidth tiers. chi2 = {{ "%.2f"|format(bandwidth_chi2_result.chi2) }}, dof = {{ bandwidth_chi2_result.dof }},
+    p-value = {{ "%.4g"|format(bandwidth_chi2_result.p_value) }}
+    ({{ "statistically significant" if bandwidth_chi2_result.significant else "not statistically significant" }}
+    at p &lt; 0.05{{ ", survives Bonferroni correction" if bandwidth_chi2_result.significant_bonferroni else "" }}).
+    Effect size: Cramer's V = {{ "%.3f"|format(bandwidth_chi2_result.cramers_v) }}
+    ({{ bandwidth_chi2_result.effect_size_label }}).
+</div>
+{% endif %}
+
+{% if geo_cluster_risk_test %}
+<div class="finding">
+    <b>Geographic clustering predicts behavior:</b> Kruskal-Wallis test across
+    {{ geo_cluster_risk_test.n_clusters }} geo clusters ({{ geo_cluster_risk_test.n_routers }} routers)
+    -- risk score: H = {{ "%.2f"|format(geo_cluster_risk_test.h_stat) }},
+    p = {{ "%.4g"|format(geo_cluster_risk_test.p_value) }},
+    epsilon-squared = {{ "%.3f"|format(geo_cluster_risk_test.epsilon_sq) }}
+    ({{ geo_cluster_risk_test.effect_size_label }} effect); anomaly score:
+    epsilon-squared = {{ "%.3f"|format(geo_cluster_anomaly_test.epsilon_sq) }}
+    ({{ geo_cluster_anomaly_test.effect_size_label }} effect). Routers grouped into the same
+    geographic cluster measurably share more similar risk profiles than chance would predict --
+    the first result in this study directly connecting the geographic and behavioral analyses.
+    See <a href="/geo-correlation">Geo Correlations</a>.
+</div>
+{% endif %}
+
+<div class="finding">
+    <b>Geographic clustering:</b> pure spatial DBSCAN (250km radius) found <b>{{ n_geo_clusters }}</b>
+    distinct geographic clusters, with {{ "%.1f"|format(geo_noise_pct) }}% of geolocated routers
+    classified as isolated/noise (not part of any dense cluster). Sensitivity check across
+    alternate radii:
+    <table>
+        <tr><th>Radius (km)</th><th>Clusters</th><th>ARI vs 250km baseline</th></tr>
+        {% for s in sensitivity %}
+        <tr><td>{{ s.radius_km }}</td><td>{{ s.n_clusters }}</td><td>{{ "%.3f"|format(s.ari) }}</td></tr>
+        {% endfor %}
+    </table>
+    See <a href="/methodology">Methodology</a> for the full sensitivity discussion.
+</div>
+
+<div class="finding">
+    <b>Vantage point overlap:</b> of {{ either_count }} routers observed by at least one vantage
+    point, {{ both_count }} were seen by both Java I2P and i2pd (Jaccard similarity =
+    {{ "%.1f"|format(jaccard_pct) }}%). See <a href="/vantage-comparison">Vantage Comparison</a>.
+</div>
+
+<div class="finding">
+    <b>Operator concentration check:</b> the top 5 ASNs by router count account for
+    {{ "%.1f"|format(top5_asn_concentration_pct) }}% of all ASN-resolved routers -- a bias check
+    confirming the network isn't dominated by one operator running many routers under a handful
+    of ASNs. See <a href="/dashboard">Dashboard</a>.
+</div>
+
+<div class="finding">
+    <b>Capability adoption:</b> {{ "%.1f"|format(pct_floodfill) }}% of routers are floodfill-capable;
+    {{ "%.1f"|format(pct_ipv6) }}% support IPv6. See <a href="/geo-correlation">Geo Correlations</a>
+    for the per-country breakdown.
+</div>
+
+<hr>
+
+<div class="intel-box">
+    <b>Known, disclosed limitation:</b> third-party router implementation (Java I2P vs. i2pd vs.
+    I2P+) cannot be reliably determined from passive netDb data -- the router.version field is a
+    shared I2NP protocol version, not a per-implementation identifier. Full explanation on
+    <a href="/methodology">Methodology</a>.
+</div>
+
+</body>
+</html>

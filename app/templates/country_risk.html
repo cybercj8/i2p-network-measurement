@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Country Risk Scores</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #333; color: white; }
+        tr:hover { background: #f5f5f5; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .bg-danger { background: #d9534f; color: white; }
+        .bg-warning { background: #f0ad4e; color: black; }
+        .bg-info { background: #5bc0de; color: black; }
+        .bg-success { background: #5cb85c; color: white; }
+
+        nav a { margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+<h1>🌍 Country Risk Scores</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a>
+</nav>
+
+<hr>
+
+<p>
+    This table shows the combined geopolitical + cyber threat exposure score for each country.
+    Higher values indicate higher systemic risk.
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Country</th>
+            <th>Risk Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for country, score in rows %}
+        <tr>
+            <td>
+                <a href="/country/{{ country }}">
+                    {{ country }}
+                </a>
+            </td>
+            <td>
+                <span class="badge
+                    {% if score >= 0.75 %} bg-danger
+                    {% elif score >= 0.5 %} bg-warning
+                    {% elif score >= 0.25 %} bg-info
+                    {% else %} bg-success
+                    {% endif %}
+                ">
+                    {{ "%.3f"|format(score) }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>
+

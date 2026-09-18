@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>I2P Router Intelligence</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+    <style>
+        .badge-low { background: #4CAF50; color: white; padding: 3px 6px; border-radius: 4px; }
+        .badge-med { background: #FFC107; color: black; padding: 3px 6px; border-radius: 4px; }
+        .badge-high { background: #F44336; color: white; padding: 3px 6px; border-radius: 4px; }
+        .badge-susp { background: #9C27B0; color: white; padding: 3px 6px; border-radius: 4px; }
+        .badge-cluster { background: #2196F3; color: white; padding: 3px 6px; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>I2P Router Intelligence</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/behavior">Behavior</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<h2>Filters</h2>
+
+<form method="get" action="/routers">
+    ASN: <input type="text" name="asn" value="{{ filters.get('asn','') }}">
+    Country: <input type="text" name="country" value="{{ filters.get('country','') }}">
+    Cluster: <input type="text" name="cluster" value="{{ filters.get('cluster','') }}">
+
+    Suspicious:
+    <input type="text" name="min_susp" size="4" placeholder="min" value="{{ filters.get('min_susp','') }}">
+    -
+    <input type="text" name="max_susp" size="4" placeholder="max" value="{{ filters.get('max_susp','') }}">
+
+    Risk:
+    <input type="text" name="min_risk" size="4" placeholder="min" value="{{ filters.get('min_risk','') }}">
+    -
+    <input type="text" name="max_risk" size="4" placeholder="max" value="{{ filters.get('max_risk','') }}">
+
+    Anomaly:
+    <input type="text" name="min_anomaly" size="4" placeholder="min" value="{{ filters.get('min_anomaly','') }}">
+    -
+    <input type="text" name="max_anomaly" size="4" placeholder="max" value="{{ filters.get('max_anomaly','') }}">
+
+    Search Hash:
+    <input type="text" name="search" value="{{ filters.get('search','') }}">
+
+    <button type="submit">Apply</button>
+</form>
+
+<hr>
+
+<h2>Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Routers:</b> {{ intel.router_count }}</div>
+        <div class="intel-item"><b>Avg Risk:</b> {{ "%.4f"|format(intel.avg_risk) }}</div>
+        <div class="intel-item"><b>Avg Suspicious:</b> {{ "%.4f"|format(intel.avg_susp) }}</div>
+        <div class="intel-item"><b>Avg Anomaly:</b> {{ "%.4f"|format(intel.avg_anomaly) }}</div>
+        <div class="intel-item"><b>Avg Uptime Slope:</b> {{ "%.4f"|format(intel.avg_uptime_slope) }}</div>
+
+        <div class="intel-item"><b>High‑Risk Routers:</b> {{ intel.high_risk }}</div>
+        <div class="intel-item"><b>Suspicious Routers:</b> {{ intel.suspicious }}</div>
+        <div class="intel-item"><b>Unstable Routers:</b> {{ intel.unstable }}</div>
+
+        <div class="intel-item"><b>Top ASN:</b> {{ intel.top_asn }}</div>
+        <div class="intel-item"><b>Top Country:</b> {{ intel.top_country }}</div>
+        <div class="intel-item"><b>Clusters Present:</b> {{ intel.cluster_count }}</div>
+        <div class="intel-item"><b>Behavioral Anomalies:</b> {{ intel.behavior_anomalies }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<h2>Routers (Page {{ page }} of {{ total_pages }})</h2>
+
+<table>
+    <tr>
+        <th>Router</th>
+        <th>Suspicious</th>
+        <th>Risk</th>
+        <th>Anomaly</th>
+        <th>Cluster</th>
+        <th>Entropy</th>
+        <th>Periodicity</th>
+        <th>Stability</th>
+        <th>Uptime Slope</th>
+        <th>Distance</th>
+        <th>ASN</th>
+        <th>Country</th>
+        <th>Version</th>
+        <th>Details</th>
+    </tr>
+
+    {% for r in routers %}
+    <tr>
+        <td><a href="/router/{{ r.router_hash }}">{{ r.router_hash }}</a></td>
+
+        <td>
+            {% if r.suspiciousness >= 0.75 %}
+                <span class="badge-susp">{{ "%.3f"|format(r.suspiciousness) }}</span>
+            {% elif r.suspiciousness >= 0.5 %}
+                <span class="badge-med">{{ "%.3f"|format(r.suspiciousness) }}</span>
+            {% else %}
+                <span class="badge-low">{{ "%.3f"|format(r.suspiciousness) }}</span>
+            {% endif %}
+        </td>
+
+        <td>
+            {% if r.risk_score >= 0.75 %}
+                <span class="badge-high">{{ "%.3f"|format(r.risk_score) }}</span>
+            {% elif r.risk_score >= 0.5 %}
+                <span class="badge-med">{{ "%.3f"|format(r.risk_score) }}</span>
+            {% else %}
+                <span class="badge-low">{{ "%.3f"|format(r.risk_score) }}</span>
+            {% endif %}
+        </td>
+
+        <td>{{ "%.3f"|format(r.anomaly_score) }}</td>
+
+        <td><span class="badge-cluster">{{ r.cluster_id }}</span></td>
+
+        <td>{{ "%.3f"|format(r.entropy) }}</td>
+        <td>{{ "%.3f"|format(r.periodicity) }}</td>
+        <td>{{ "%.3f"|format(r.stability) }}</td>
+        <td>{{ "%.3f"|format(r.uptime_slope) }}</td>
+        <td>{{ "%.3f"|format(r.cluster_distance) }}</td>
+
+        <td><a href="/asn/{{ r.asn }}">{{ r.asn }}</a></td>
+        <td>{{ r.country }}</td>
+        <td>{{ r.version }}</td>
+
+        <td>
+            <a href="/router/{{ r.router_hash }}">Router</a> |
+            <a href="/behavior/{{ r.router_hash }}">Behavior</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div style="margin-top:20px;">
+    {% if page > 1 %}
+        <a href="/routers?page={{ page - 1 }}&{{ filters_qs }}">Prev</a>
+    {% endif %}
+
+    &nbsp; Page {{ page }} of {{ total_pages }} &nbsp;
+
+    {% if page < total_pages %}
+        <a href="/routers?page={{ page + 1 }}&{{ filters_qs }}">Next</a>
+    {% endif %}
+</div>
+
+<hr>
+
+<h2>Geographic Maps</h2>
+
+{% if intel.router_count > 0 %}
+<iframe src="/visualizations/maps/filtered_router_map.html"
+        width="100%" height="600" style="border:none;"></iframe>
+{% else %}
+<p><b>No routers match the current filters. No map generated.</b></p>
+{% endif %}
+
+</body>
+</html>
+

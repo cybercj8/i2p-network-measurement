@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Countries Intelligence</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+
+        iframe { border: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<h1>Countries Intelligence</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<h2>Filters</h2>
+
+<form method="get" action="/countries">
+    Country:
+    <input type="text" name="search" value="{{ filters.get('search','') }}">
+
+    Min Routers:
+    <input type="text" name="min_routers" size="4" value="{{ filters.get('min_routers','') }}">
+
+    Max Routers:
+    <input type="text" name="max_routers" size="4" value="{{ filters.get('max_routers','') }}">
+
+    <button type="submit">Apply</button>
+</form>
+
+<hr>
+
+<h2>Country Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Total Countries:</b> {{ intel.total_countries }}</div>
+        <div class="intel-item"><b>Total Routers:</b> {{ intel.total_routers }}</div>
+        <div class="intel-item"><b>Avg Routers per Country:</b> {{ "%.2f"|format(intel.avg_per_country) }}</div>
+        <div class="intel-item"><b>Most Active Country:</b> {{ intel.top_country }}</div>
+
+        <div class="intel-item"><b>Avg Risk:</b> {{ "%.4f"|format(intel.avg_risk) }}</div>
+        <div class="intel-item"><b>Avg Suspiciousness:</b> {{ "%.4f"|format(intel.avg_suspicious) }}</div>
+        <div class="intel-item"><b>Avg Anomaly:</b> {{ "%.4f"|format(intel.avg_anomaly) }}</div>
+        <div class="intel-item"><b>Avg Uptime Slope:</b> {{ "%.4f"|format(intel.avg_uptime_slope) }}</div>
+
+        <div class="intel-item"><b>High‑Risk Countries:</b> {{ intel.high_risk_countries }}</div>
+        <div class="intel-item"><b>Suspicious Countries:</b> {{ intel.suspicious_countries }}</div>
+        <div class="intel-item"><b>Anomaly‑Heavy Countries:</b> {{ intel.anomaly_countries }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<h2>Country Analytics</h2>
+
+<h3>Country Router Distribution</h3>
+<img src="/visualizations/charts/country_router_distribution.png" width="600">
+
+<h3>Country Risk Distribution</h3>
+<img src="/visualizations/charts/country_risk_distribution.png" width="600">
+
+<h3>Country Suspiciousness Distribution</h3>
+<img src="/visualizations/charts/country_suspicious_distribution.png" width="600">
+
+<h3>Country Anomaly Distribution</h3>
+<img src="/visualizations/charts/country_anomaly_distribution.png" width="600">
+
+<hr>
+
+<h2>Countries (Page {{ page }} of {{ total_pages }})</h2>
+
+<table>
+    <tr>
+        <th>Country</th>
+        <th>Router Count</th>
+        <th>Details</th>
+    </tr>
+
+    {% for c in countries %}
+    <tr>
+        <td>{{ c.country }}</td>
+        <td>{{ c.count }}</td>
+        <td><a href="/country/{{ c.country }}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div style="margin-top:20px;">
+    {% if page > 1 %}
+        <a href="/countries?page={{ page - 1 }}&{{ filters_qs }}">Prev</a>
+    {% endif %}
+
+    &nbsp; Page {{ page }} of {{ total_pages }} &nbsp;
+
+    {% if page < total_pages %}
+        <a href="/countries?page={{ page + 1 }}&{{ filters_qs }}">Next</a>
+    {% endif %}
+</div>
+
+<hr>
+
+<h2>Country Maps</h2>
+
+<h3>Router Density Map</h3>
+<iframe src="/visualizations/maps/country_density_map.html" width="100%" height="500"></iframe>
+
+<h3>Country Heatmap</h3>
+<iframe src="/visualizations/maps/country_heatmap.html" width="100%" height="500"></iframe>
+
+<h3>Filtered Country Map</h3>
+<iframe src="/visualizations/maps/country_filtered_map.html" width="100%" height="500"></iframe>
+
+<h3>Country Risk Map</h3>
+<iframe src="/visualizations/maps/country_risk_map.html" width="100%" height="500"></iframe>
+
+<h3>Country Anomaly Map</h3>
+<iframe src="/visualizations/maps/country_anomaly_map.html" width="100%" height="500"></iframe>
+
+<h3>Country Behavior Map</h3>
+<iframe src="/visualizations/maps/country_behavior_map.html" width="100%" height="500"></iframe>
+
+</body>
+</html>
+

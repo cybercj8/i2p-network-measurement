@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Suspicious Detail: {{ info.router_hash }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .badge-low { background: #4CAF50; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-med { background: #FFC107; color: black; padding: 4px 7px; border-radius: 4px; }
+        .badge-high { background: #F44336; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-susp { background: #9C27B0; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-cluster { background: #2196F3; color: white; padding: 4px 7px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<h1>Suspicious Detail for {{ info.router_hash }}</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/risk/{{ info.router_hash }}">Risk</a> |
+    <a href="/behavior/{{ info.router_hash }}">Behavior</a> |
+    <a href="/router/{{ info.router_hash }}">Router</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<h2>Suspiciousness Breakdown</h2>
+
+<table>
+    <tr>
+        <th>Suspiciousness</th>
+        <td>
+            {% if info.suspiciousness >= 0.75 %}
+                <span class="badge-susp">{{ "%.4f"|format(info.suspiciousness) }}</span>
+            {% elif info.suspiciousness >= 0.5 %}
+                <span class="badge-med">{{ "%.4f"|format(info.suspiciousness) }}</span>
+            {% else %}
+                <span class="badge-low">{{ "%.4f"|format(info.suspiciousness) }}</span>
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <th>Risk Score</th>
+        <td>
+            {% if info.risk_score >= 0.75 %}
+                <span class="badge-high">{{ "%.4f"|format(info.risk_score) }}</span>
+            {% elif info.risk_score >= 0.5 %}
+                <span class="badge-med">{{ "%.4f"|format(info.risk_score) }}</span>
+            {% else %}
+                <span class="badge-low">{{ "%.4f"|format(info.risk_score) }}</span>
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr><th>Uptime Slope</th><td>{{ "%.4f"|format(info.uptime_slope) }}</td></tr>
+</table>
+
+<hr>
+
+<h2>Behavior Metrics</h2>
+
+<table>
+    <tr><th>Cluster</th><td><span class="badge-cluster">{{ info.cluster_id }}</span></td></tr>
+    <tr><th>Entropy</th><td>{{ "%.4f"|format(info.entropy) }}</td></tr>
+    <tr><th>Periodicity</th><td>{{ "%.4f"|format(info.periodicity) }}</td></tr>
+    <tr><th>Stability</th><td>{{ "%.4f"|format(info.stability) }}</td></tr>
+    <tr><th>Cluster Distance</th><td>{{ "%.4f"|format(info.cluster_distance) }}</td></tr>
+</table>
+
+<hr>
+
+<h2>Router Metadata</h2>
+
+<table>
+    <tr><th>ASN</th><td>{{ info.asn }} ({{ info.as_org }})</td></tr>
+    <tr><th>Country</th><td>{{ info.country }}</td></tr>
+    <tr><th>Version</th><td>{{ info.version }}</td></tr>
+</table>
+
+<hr>
+
+<h2>Navigation</h2>
+
+<p>
+    <a href="/router/{{ info.router_hash }}">Router Detail</a> |
+    <a href="/risk/{{ info.router_hash }}">Risk Detail</a> |
+    <a href="/behavior/{{ info.router_hash }}">Behavior Detail</a>
+</p>
+
+</body>
+</html>
+

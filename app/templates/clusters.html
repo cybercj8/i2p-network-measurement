@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>I2P Cluster Intelligence</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        .badge-cluster { background: #2196F3; color: white; padding: 4px 7px; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>I2P Cluster Intelligence</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/behavior">Behavior</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<!-- ========================= -->
+<!--   FILTERS SECTION         -->
+<!-- ========================= -->
+
+<h2>Filters</h2>
+
+<form method="get" action="/clusters">
+    Cluster ID:
+    <input type="text" name="search" value="{{ filters.get('search','') }}">
+
+    Min Size:
+    <input type="text" name="min_size" size="4" value="{{ filters.get('min_size','') }}">
+
+    Max Size:
+    <input type="text" name="max_size" size="4" value="{{ filters.get('max_size','') }}">
+
+    <button type="submit">Apply</button>
+</form>
+
+<hr>
+
+<!-- ========================= -->
+<!--   INTELLIGENCE SUMMARY    -->
+<!-- ========================= -->
+
+<h2>Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Total Clusters:</b> {{ intel.total_clusters }}</div>
+        <div class="intel-item"><b>Total Routers:</b> {{ intel.total_routers }}</div>
+        <div class="intel-item"><b>Avg Cluster Size:</b> {{ "%.2f"|format(intel.avg_cluster_size) }}</div>
+
+        <div class="intel-item"><b>Avg Risk:</b> {{ "%.4f"|format(intel.avg_risk) }}</div>
+        <div class="intel-item"><b>Avg Suspiciousness:</b> {{ "%.4f"|format(intel.avg_susp) }}</div>
+        <div class="intel-item"><b>Avg Anomaly:</b> {{ "%.4f"|format(intel.avg_anomaly) }}</div>
+
+        <div class="intel-item"><b>Avg Uptime Slope:</b> {{ "%.4f"|format(intel.avg_uptime_slope) }}</div>
+        <div class="intel-item"><b>Behavioral Outliers:</b> {{ intel.behavior_outliers }}</div>
+        <div class="intel-item"><b>Largest Cluster:</b> {{ intel.largest_cluster }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   CLUSTER TABLE           -->
+<!-- ========================= -->
+
+<!-- ========================= -->
+<!--   CLUSTER ANALYTICS       -->
+<!-- ========================= -->
+
+<h2>Cluster Analytics</h2>
+
+<img src="/visualizations/charts/cluster_distribution.png" width="600">
+<img src="/visualizations/charts/cluster_risk_distribution.png" width="600">
+<img src="/visualizations/charts/cluster_anomaly_distribution.png" width="600">
+
+<hr>
+
+<h2>Clusters (Page {{ page }} of {{ total_pages }})</h2>
+
+<table>
+    <tr>
+        <th>Cluster</th>
+        <th>Routers</th>
+        <th>Details</th>
+    </tr>
+
+    {% for c in clusters %}
+    <tr>
+        <td><span class="badge-cluster">{{ c.cluster_id }}</span></td>
+        <td>{{ c.count }}</td>
+
+        <td>
+            <a href="/cluster/{{ c.cluster_id }}">View</a> |
+            <a href="/suspicious?cluster={{ c.cluster_id }}">Suspicious</a> |
+            <a href="/behavior?cluster={{ c.cluster_id }}">Behavior</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<!-- ========================= -->
+<!--   PAGINATION CONTROLS     -->
+<!-- ========================= -->
+
+<div style="margin-top:20px;">
+    {% if page > 1 %}
+        <a href="/clusters?page={{ page - 1 }}&{{ filters_qs }}">Prev</a>
+    {% endif %}
+
+    &nbsp; Page {{ page }} of {{ total_pages }} &nbsp;
+
+    {% if page < total_pages %}
+        <a href="/clusters?page={{ page + 1 }}&{{ filters_qs }}">Next</a>
+    {% endif %}
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   CLUSTER MAPS (ALL)      -->
+<!-- ========================= -->
+
+<h2>Cluster Maps</h2>
+
+<h3>Cluster Overview Map</h3>
+<iframe src="/visualizations/maps/cluster_filtered_map.html"
+        width="100%" height="600"></iframe>
+
+<h3>Cluster Risk Map</h3>
+<iframe src="/visualizations/maps/cluster_risk_map.html"
+        width="100%" height="600"></iframe>
+
+<h3>Cluster Anomaly Map</h3>
+<iframe src="/visualizations/maps/cluster_anomaly_map.html"
+        width="100%" height="600"></iframe>
+
+<h3>Cluster Behavior Map</h3>
+<iframe src="/visualizations/maps/cluster_behavior_map.html"
+        width="100%" height="600"></iframe>
+
+</body>
+</html>
+

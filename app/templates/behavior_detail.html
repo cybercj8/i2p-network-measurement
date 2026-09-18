@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Behavioral Intelligence: {{ router_hash }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        .badge-low { background: #4CAF50; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-med { background: #FFC107; color: black; padding: 4px 7px; border-radius: 4px; }
+        .badge-high { background: #F44336; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-susp { background: #9C27B0; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-cluster { background: #2196F3; color: white; padding: 4px 7px; border-radius: 4px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>Behavioral Intelligence: {{ router_hash }}</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/router/{{ router_hash }}">Router Detail</a> |
+    <a href="/behavior/{{ router_hash }}">Behavior</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<h2>Behavioral Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Router:</b> {{ router_hash }}</div>
+        <div class="intel-item"><b>Cluster:</b> {{ behavior.cluster_id }}</div>
+        <div class="intel-item"><b>Cluster Distance:</b> {{ "%.4f"|format(behavior.cluster_distance) }}</div>
+
+        <div class="intel-item"><b>Entropy:</b> {{ "%.4f"|format(behavior.entropy) }}</div>
+        <div class="intel-item"><b>Periodicity:</b> {{ "%.4f"|format(behavior.periodicity) }}</div>
+        <div class="intel-item"><b>Stability:</b> {{ "%.4f"|format(behavior.stability) }}</div>
+
+        <div class="intel-item"><b>Uptime Slope:</b> {{ "%.4f"|format(behavior.uptime_slope) }}</div>
+        <div class="intel-item"><b>Anomaly Score:</b> {{ "%.4f"|format(behavior.anomaly_score) }}</div>
+        <div class="intel-item"><b>Risk Score:</b> {{ "%.4f"|format(behavior.risk_score) }}</div>
+
+        <div class="intel-item"><b>Suspiciousness:</b> {{ "%.4f"|format(behavior.suspiciousness) }}</div>
+        <div class="intel-item"><b>Behavioral Category:</b> {{ behavior.category }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<h2>Behavioral Interpretation</h2>
+<p>{{ behavior.explanation }}</p>
+
+<hr>
+
+<h2>Behavioral Metrics</h2>
+
+<table>
+    <tr><th>Entropy</th><td>{{ "%.4f"|format(behavior.entropy) }}</td></tr>
+    <tr><th>Periodicity</th><td>{{ "%.4f"|format(behavior.periodicity) }}</td></tr>
+    <tr><th>Stability</th><td>{{ "%.4f"|format(behavior.stability) }}</td></tr>
+    <tr><th>Uptime Slope</th><td>{{ "%.4f"|format(behavior.uptime_slope) }}</td></tr>
+    <tr><th>Cluster Distance</th><td>{{ "%.4f"|format(behavior.cluster_distance) }}</td></tr>
+    <tr><th>Anomaly Score</th><td>{{ "%.4f"|format(behavior.anomaly_score) }}</td></tr>
+    <tr><th>Risk Score</th><td>{{ "%.4f"|format(behavior.risk_score) }}</td></tr>
+    <tr><th>Suspiciousness</th><td>{{ "%.4f"|format(behavior.suspiciousness) }}</td></tr>
+</table>
+
+<hr>
+
+<h2>Behavioral Timelines</h2>
+
+<h3>Entropy Over Time</h3>
+<img src="/visualizations/charts/behavior_{{ router_hash }}_entropy.png" width="600">
+
+<h3>Periodicity Over Time</h3>
+<img src="/visualizations/charts/behavior_{{ router_hash }}_periodicity.png" width="600">
+
+<h3>Stability Over Time</h3>
+<img src="/visualizations/charts/behavior_{{ router_hash }}_stability.png" width="600">
+
+<h3>Uptime Slope Over Time</h3>
+<img src="/visualizations/charts/behavior_{{ router_hash }}_uptime.png" width="600">
+
+<h3>Cluster Distance Over Time</h3>
+<img src="/visualizations/charts/behavior_{{ router_hash }}_cluster_distance.png" width="600">
+
+<hr>
+
+<h2>Behavioral Maps</h2>
+
+<h3>Behavior Map</h3>
+<iframe src="{{ maps.behavior }}" width="100%" height="500"></iframe>
+
+<h3>Cluster Distance Map</h3>
+<iframe src="{{ maps.cluster_distance }}" width="100%" height="500"></iframe>
+
+<h3>Anomaly Map</h3>
+<iframe src="{{ maps.anomaly }}" width="100%" height="500"></iframe>
+
+<h3>Risk Map</h3>
+<iframe src="{{ maps.risk }}" width="100%" height="500"></iframe>
+
+<h3>Movement Map</h3>
+<iframe src="{{ maps.movement }}" width="100%" height="500"></iframe>
+
+<h3>Pin Map</h3>
+<iframe src="{{ maps.pin }}" width="100%" height="500"></iframe>
+
+</body>
+</html>
+

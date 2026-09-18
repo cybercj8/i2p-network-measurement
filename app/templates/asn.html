@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ASN Intelligence Overview</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>ASN Intelligence Overview</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<h2>Filters</h2>
+
+<form method="get" action="/asn">
+    Search:
+    <input type="text" name="search" value="{{ filters.get('search','') }}">
+
+    Min Routers:
+    <input type="text" name="min_routers" size="4" value="{{ filters.get('min_routers','') }}">
+
+    Max Routers:
+    <input type="text" name="max_routers" size="4" value="{{ filters.get('max_routers','') }}">
+
+    <button type="submit">Apply</button>
+</form>
+
+<hr>
+
+<h2>ASN Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Total ASNs:</b> {{ intel.total_asns }}</div>
+        <div class="intel-item"><b>Total Routers:</b> {{ intel.total_routers }}</div>
+        <div class="intel-item"><b>Avg Routers per ASN:</b> {{ "%.2f"|format(intel.avg_per_asn) }}</div>
+        <div class="intel-item"><b>Top ASN:</b> {{ intel.top_asn }}</div>
+
+        <div class="intel-item"><b>Avg Risk:</b> {{ "%.4f"|format(intel.avg_risk) }}</div>
+        <div class="intel-item"><b>Avg Suspiciousness:</b> {{ "%.4f"|format(intel.avg_suspicious) }}</div>
+        <div class="intel-item"><b>Avg Anomaly:</b> {{ "%.4f"|format(intel.avg_anomaly) }}</div>
+        <div class="intel-item"><b>Avg Uptime Slope:</b> {{ "%.4f"|format(intel.avg_uptime_slope) }}</div>
+
+        <div class="intel-item"><b>High‑Risk ASNs:</b> {{ intel.high_risk_asns }}</div>
+        <div class="intel-item"><b>Suspicious ASNs:</b> {{ intel.suspicious_asns }}</div>
+        <div class="intel-item"><b>Anomaly‑Heavy ASNs:</b> {{ intel.anomaly_asns }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<h2>ASN Analytics</h2>
+
+<h3>Routers per ASN Distribution</h3>
+<img src="/visualizations/charts/asn_router_distribution.png" width="600">
+
+<h3>ASN Risk Distribution</h3>
+<img src="/visualizations/charts/asn_risk_distribution.png" width="600">
+
+<h3>ASN Suspiciousness Distribution</h3>
+<img src="/visualizations/charts/asn_suspicious_distribution.png" width="600">
+
+<h3>ASN Anomaly Distribution</h3>
+<img src="/visualizations/charts/asn_anomaly_distribution.png" width="600">
+
+<hr>
+
+<h2>ASN Intelligence Maps</h2>
+
+<h3>ASN Router Density Map</h3>
+<iframe src="{{ maps.density }}" width="100%" height="500"></iframe>
+
+<h3>ASN Risk Map</h3>
+<iframe src="{{ maps.risk }}" width="100%" height="500"></iframe>
+
+<h3>ASN Anomaly Map</h3>
+<iframe src="{{ maps.anomaly }}" width="100%" height="500"></iframe>
+
+<h3>ASN Behavior Map</h3>
+<iframe src="{{ maps.behavior }}" width="100%" height="500"></iframe>
+
+<hr>
+
+<h2>ASNs (Page {{ page }} of {{ total_pages }})</h2>
+
+<table>
+    <tr>
+        <th>ASN</th>
+        <th>Name</th>
+        <th>Routers</th>
+        <th>Details</th>
+    </tr>
+
+    {% for a in asns %}
+    <tr>
+        <td>{{ a.asn }}</td>
+        <td>{{ a.as_org }}</td>
+        <td>{{ a.count }}</td>
+        <td><a href="/asn/{{ a.asn }}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div style="margin-top:20px;">
+    {% if page > 1 %}
+        <a href="/asn?page={{ page - 1 }}&{{ filters_qs }}">Prev</a>
+    {% endif %}
+
+    &nbsp; Page {{ page }} of {{ total_pages }} &nbsp;
+
+    {% if page < total_pages %}
+        <a href="/asn?page={{ page + 1 }}&{{ filters_qs }}">Next</a>
+    {% endif %}
+</div>
+
+<hr>
+
+<h2>Top ASNs by Router Count</h2>
+
+<table>
+    <tr><th>ASN</th><th>Name</th><th>Routers</th><th>Details</th></tr>
+    {% for a in top_asns %}
+    <tr>
+        <td>{{ a[0] }}</td>
+        <td>{{ a[1] }}</td>
+        <td>{{ a[2] }}</td>
+        <td><a href="/asn/{{ a[0] }}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h2>Top ASNs by Risk Score</h2>
+
+<table>
+    <tr><th>ASN</th><th>Name</th><th>Risk Score</th><th>Details</th></tr>
+    {% for r in risk %}
+    <tr>
+        <td>{{ r[0] }}</td>
+        <td>{{ r[1] }}</td>
+        <td>{{ "%.4f"|format(r[2]) }}</td>
+        <td><a href="/asn/{{ r[0] }}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h2>Top ASNs by Anomaly Score</h2>
+
+<table>
+    <tr><th>ASN</th><th>Name</th><th>Avg Anomaly</th><th>Details</th></tr>
+    {% for a in anomalies %}
+    <tr>
+        <td>{{ a[0] }}</td>
+        <td>{{ a[1] }}</td>
+        <td>{{ "%.4f"|format(a[2]) }}</td>
+        <td><a href="/asn/{{ a[0] }}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h2>Cluster Distribution Across ASNs</h2>
+
+<table>
+    <tr><th>Cluster</th><th>ASNs</th></tr>
+    {% for c in clusters %}
+    <tr>
+        <td>{{ c[0] }}</td>
+        <td>{{ c[1] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

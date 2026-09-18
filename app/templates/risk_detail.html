@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Risk Detail: {{ info.router_hash }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>Risk Detail for {{ info.router_hash }}</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/behavior/{{ info.router_hash }}">Behavior</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<h2>Why This Score</h2>
+<div class="intel-box">
+    <b>{{ info.risk_explanation }}</b>
+</div>
+<p>Each factor below is on a 0-1 scale; a factor contributes a flagged reason above once it
+crosses 0.6. The weighted combination of all of them produces the overall Risk Score.</p>
+
+<h2>Risk Breakdown</h2>
+
+<table>
+    <tr><th>Risk Score</th><td>{{ "%.4f"|format(info.risk_score) }}</td></tr>
+    <tr><th>Uptime Anomaly</th><td>{{ "%.4f"|format(info.uptime_anomaly) }}</td></tr>
+    <tr><th>Bandwidth Anomaly</th><td>{{ "%.4f"|format(info.bandwidth_anomaly) }}</td></tr>
+    <tr><th>Version Risk</th><td>{{ "%.4f"|format(info.version_risk) }}</td></tr>
+    <tr><th>Cluster Outlier</th><td>{{ "%.4f"|format(info.cluster_outlier) }}</td></tr>
+    <tr><th>Transport Risk</th><td>{{ "%.4f"|format(info.transport_risk) }}</td></tr>
+    <tr><th>Caps Risk</th><td>{{ "%.4f"|format(info.caps_risk) }}</td></tr>
+    <tr><th>Threat Exposure</th><td>{{ "%.4f"|format(info.threat_exposure) }}</td></tr>
+    <tr><th>ML Anomaly</th><td>{{ "%.4f"|format(info.ml_anomaly) }}</td></tr>
+    <tr><th>Churn Risk</th><td>{{ "%.4f"|format(info.churn_risk) }}</td></tr>
+    <tr><th>Country Risk</th><td>{{ "%.4f"|format(info.country_risk) }}</td></tr>
+    <tr><th>ASN Risk</th><td>{{ "%.4f"|format(info.asn_risk) }}</td></tr>
+    <tr><th>Uptime Slope</th><td>{{ "%.4f"|format(info.uptime_slope) }}</td></tr>
+    <tr><th>Suspiciousness</th><td>{{ "%.4f"|format(info.suspiciousness) }}</td></tr>
+</table>
+
+<hr>
+
+<h2>Behavior Metrics</h2>
+<p>Computed from this router's real observation history (how often it's been seen, how
+regularly-spaced those sightings are). See <a href="/behavior/{{ info.router_hash }}">Behavior</a>
+for the full trend charts.</p>
+
+<table>
+    <tr><th>Entropy</th><td>{{ "%.4f"|format(info.entropy) }}</td></tr>
+    <tr><th>Periodicity</th><td>{{ "%.4f"|format(info.periodicity) }}</td></tr>
+    <tr><th>Stability</th><td>{{ "%.4f"|format(info.stability) }}</td></tr>
+    <tr><th>Cluster Distance</th><td>{{ "%.4f"|format(info.cluster_distance) }}</td></tr>
+    <tr><th>Cluster</th><td>{{ info.cluster_id }}</td></tr>
+</table>
+
+<hr>
+
+<h2>Churn-Based Risk Metrics</h2>
+<p>A separate set of entropy/periodicity/stability/cluster metrics computed by the risk
+engine from a different source: how often this router's IP, ASN, capabilities, or transport
+have changed (churn events), not from observation timestamps. Deliberately named
+differently from the Behavior Metrics above -- they measure different things and are not
+comparable to each other.</p>
+
+<table>
+    <tr><th>Churn Entropy</th><td>{{ "%.4f"|format(info.churn_entropy) }}</td></tr>
+    <tr><th>Churn Periodicity</th><td>{{ "%.4f"|format(info.churn_periodicity) }}</td></tr>
+    <tr><th>Churn Stability</th><td>{{ "%.4f"|format(info.churn_stability) }}</td></tr>
+    <tr><th>Risk Cluster</th><td>{{ info.risk_cluster }}</td></tr>
+</table>
+
+<hr>
+
+<h2>Router Metadata</h2>
+
+<table>
+    <tr><th>ASN</th><td>{{ info.asn }} ({{ info.as_org }})</td></tr>
+    <tr><th>Country</th><td>{{ info.country }}</td></tr>
+    <tr><th>Version</th><td>{{ info.version }}</td></tr>
+    <tr><th>IPv6</th><td>{{ info.ipv6 }}</td></tr>
+    <tr><th>NTCP2</th><td>{{ info.ntcp2 }}</td></tr>
+    <tr><th>SSU2</th><td>{{ info.ssu2 }}</td></tr>
+</table>
+
+<hr>
+
+<h2>Risk Timeline</h2>
+
+{% if timeline %}
+<table>
+    <tr><th>Timestamp</th><th>Risk Score</th></tr>
+    {% for t in timeline %}
+    <tr>
+        <td>{{ t[1] }}</td>
+        <td>{{ "%.4f"|format(t[0]) }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No risk timeline available.</p>
+{% endif %}
+
+<hr>
+
+<h2>Anomaly Timeline</h2>
+
+{% if info.anomalies %}
+<table>
+    <tr><th>Score</th><th>Reason</th><th>Timestamp</th></tr>
+    {% for a in info.anomalies %}
+    <tr>
+        <td>{{ "%.4f"|format(a.score) }}</td>
+        <td>{{ a.reason }}</td>
+        <td>{{ a.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No anomalies recorded.</p>
+{% endif %}
+
+<hr>
+
+<h2>Risk Maps</h2>
+
+<h3>Risk Map</h3>
+<iframe src="{{ maps.main }}" width="100%" height="500"></iframe>
+
+<h3>Risk Heatmap</h3>
+<iframe src="{{ maps.heat }}" width="100%" height="500"></iframe>
+
+<h3>Risk–Anomaly Map</h3>
+<iframe src="{{ maps.anomaly }}" width="100%" height="500"></iframe>
+
+<h3>Risk–Behavior Map</h3>
+<iframe src="{{ maps.behavior }}" width="100%" height="500"></iframe>
+
+</body>
+</html>
+

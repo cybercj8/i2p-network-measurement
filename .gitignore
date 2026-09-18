@@ -1,0 +1,26 @@
+# Collected data is deliberately not published: the analysis database contains
+# router IP addresses. See the Data availability section of the README.
+data/
+*.duckdb
+*.duckdb.wal
+suspicious_routers.csv
+
+# Generated output
+visualizations/
+visuals/
+charts/
+*.png
+!docs/figures/*.png
+
+# MaxMind GeoLite2 databases (not redistributable)
+*.mmdb
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# OS
+.DS_Store

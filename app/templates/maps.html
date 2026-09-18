@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geospatial Intelligence Maps</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        .panel {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        iframe { border: none; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>Geospatial Intelligence Maps</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/behavior">Behavior</a> |
+    <a href="/maps">Maps</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<!-- ========================= -->
+<!--   MAPS OVERVIEW SUMMARY   -->
+<!-- ========================= -->
+
+<h2>Geospatial Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Total Routers:</b> {{ global_stats.total_routers }}</div>
+        <div class="intel-item"><b>Countries Observed:</b> {{ global_stats.total_countries }}</div>
+        <div class="intel-item"><b>ASNs Observed:</b> {{ global_stats.total_asns }}</div>
+        <div class="intel-item"><b>Clusters:</b> {{ global_stats.cluster_count }}</div>
+
+        <div class="intel-item"><b>Avg Risk:</b> {{ "%.4f"|format(global_stats.avg_risk) }}</div>
+        <div class="intel-item"><b>Avg Suspiciousness:</b> {{ "%.4f"|format(global_stats.avg_suspicious) }}</div>
+        <div class="intel-item"><b>High‑Risk Routers:</b> {{ global_stats.high_risk }}</div>
+        <div class="intel-item"><b>Suspicious Routers:</b> {{ global_stats.suspicious }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   GLOBAL MAPS             -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Global Maps</h2>
+
+    <h3>Global Router Map</h3>
+    <iframe src="/visualizations/maps/global_map.html" width="100%" height="500"></iframe>
+
+    <h3>Global Risk Heatmap</h3>
+    <iframe src="/visualizations/maps/router_risk_heatmap.html" width="100%" height="500"></iframe>
+
+    <h3>Global Suspiciousness Heatmap</h3>
+    <iframe src="/visualizations/maps/suspicious_heatmap.html" width="100%" height="500"></iframe>
+
+    <h3>Global Cluster Map</h3>
+    <iframe src="/visualizations/maps/cluster_map.html" width="100%" height="500"></iframe>
+
+    <h3>Pure Geographic Cluster Map (DBSCAN)</h3>
+    <iframe src="/visualizations/maps/geo_cluster_map.html" width="100%" height="500"></iframe>
+
+    <h3>Global ASN Map</h3>
+    <iframe src="/visualizations/maps/asn_risk_map.html" width="100%" height="500"></iframe>
+
+    <h3>Global Country Map</h3>
+    <iframe src="/visualizations/maps/country_heatmap.html" width="100%" height="500"></iframe>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   FILTERED MAPS           -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Filtered Intelligence Maps</h2>
+    <p>These maps update dynamically based on filters applied on their respective pages.</p>
+
+    <h3>Filtered Router Map</h3>
+    <iframe src="/visualizations/maps/router_filtered_map.html" width="100%" height="500"></iframe>
+
+    <h3>Filtered Cluster Map</h3>
+    <iframe src="/visualizations/maps/cluster_filtered_map.html" width="100%" height="500"></iframe>
+
+    <h3>Filtered Suspicious Router Map</h3>
+    <iframe src="/visualizations/maps/suspicious_filtered_map.html" width="100%" height="500"></iframe>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   BEHAVIORAL MAPS         -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Behavioral Maps</h2>
+    <p>These maps show behavioral anomalies, cluster distances, and router movement patterns.</p>
+
+    <h3>Behavioral Outlier Map</h3>
+    <iframe src="/visualizations/maps/behavior_outliers.html" width="100%" height="500"></iframe>
+
+    <h3>Router Movement Map</h3>
+    <iframe src="/visualizations/maps/router_movement_map.html" width="100%" height="500"></iframe>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   COUNTRY / ASN MAPS      -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Country & ASN Intelligence Maps</h2>
+
+    <h3>Country Router Density Map</h3>
+    <iframe src="/visualizations/maps/country_density_map.html" width="100%" height="500"></iframe>
+
+    <h3>ASN Router Density Map</h3>
+    <iframe src="/visualizations/maps/asn_density_map.html" width="100%" height="500"></iframe>
+
+    <h3>ASN Risk Map</h3>
+    <iframe src="/visualizations/maps/asn_risk_map.html" width="100%" height="500"></iframe>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   CLUSTER MAPS            -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Cluster Intelligence Maps</h2>
+
+    <h3>Cluster Map</h3>
+    <iframe src="/visualizations/maps/cluster_map.html" width="100%" height="500"></iframe>
+
+    <h3>Cluster Risk Map</h3>
+    <iframe src="/visualizations/maps/cluster_risk_map.html" width="100%" height="500"></iframe>
+
+    <h3>Cluster Suspiciousness Map</h3>
+    <iframe src="/visualizations/maps/cluster_suspicious_map.html" width="100%" height="500"></iframe>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   ROUTER‑LEVEL MAPS       -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Router‑Level Maps</h2>
+    <p>These maps are generated per‑router and accessed from the Router Detail and Behavior Detail pages.</p>
+
+    <table>
+        <tr><th>Router</th><th>Map</th></tr>
+        {% for r in router_list %}
+        <tr>
+            <td><a href="/router/{{ r }}">{{ r }}</a></td>
+            <td><a href="/maps/view/router_{{ r }}_risk_map.html">View</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div style="margin-top:20px;">
+        {% if rpage > 1 %}
+            <a href="/maps?rpage={{ rpage - 1 }}&mpage={{ mpage }}">Prev</a>
+        {% endif %}
+
+        &nbsp; Page {{ rpage }} of {{ routers_total_pages }}
+        ({{ routers_total }} routers) &nbsp;
+
+        {% if rpage < routers_total_pages %}
+            <a href="/maps?rpage={{ rpage + 1 }}&mpage={{ mpage }}">Next</a>
+        {% endif %}
+    </div>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   ALL MAP FILES           -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>All Available Map Files</h2>
+    <ul>
+    {% for m in maps %}
+        <li><a href="/maps/view/{{ m }}">{{ m }}</a></li>
+    {% endfor %}
+    </ul>
+
+    <div style="margin-top:20px;">
+        {% if mpage > 1 %}
+            <a href="/maps?mpage={{ mpage - 1 }}&rpage={{ rpage }}">Prev</a>
+        {% endif %}
+
+        &nbsp; Page {{ mpage }} of {{ maps_total_pages }}
+        ({{ maps_total }} map files) &nbsp;
+
+        {% if mpage < maps_total_pages %}
+            <a href="/maps?mpage={{ mpage + 1 }}&rpage={{ rpage }}">Next</a>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>
+

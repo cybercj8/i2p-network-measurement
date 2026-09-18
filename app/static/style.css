@@ -1,0 +1,180 @@
+body { font-family: Arial; margin: 20px; }
+table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+th, td { border: 1px solid #ccc; padding: 8px; }
+th { background: #eee; }
+nav a { margin-right: 15px; }
+
+/* ============================================================
+   THEME VARIABLES
+   Default (light) values, overridden below for dark mode.
+   Every template still ships its own <style> block with
+   hardcoded light-theme colors (table/th/.intel-box/etc), and
+   since those are declared after this stylesheet's <link> in
+   every <head>, they'd normally win the cascade -- so the dark
+   overrides further down use !important to take priority
+   regardless of per-page styles.
+   ============================================================ */
+:root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --card-bg: #ffffff;
+    --card-border: #ddd;
+    --muted-bg: #f8f8f8;
+    --table-header-bg: #f2f2f2;
+    --link-color: #0645ad;
+    --input-bg: #ffffff;
+    --input-fg: #1a1a1a;
+    --input-border: #ccc;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #121212;
+        --fg: #e4e4e4;
+        --card-bg: #1e1e1e;
+        --card-border: #3a3a3a;
+        --muted-bg: #1a1a1a;
+        --table-header-bg: #262626;
+        --link-color: #8ab4f8;
+        --input-bg: #1e1e1e;
+        --input-fg: #e4e4e4;
+        --input-border: #4a4a4a;
+    }
+}
+
+:root[data-theme="dark"] {
+    --bg: #121212;
+    --fg: #e4e4e4;
+    --card-bg: #1e1e1e;
+    --card-border: #3a3a3a;
+    --muted-bg: #1a1a1a;
+    --table-header-bg: #262626;
+    --link-color: #8ab4f8;
+    --input-bg: #1e1e1e;
+    --input-fg: #e4e4e4;
+    --input-border: #4a4a4a;
+}
+
+/* Custom theme: theme.js sets --bg/--fg directly as inline styles on
+   <html> from the user's two color pickers -- everything else here is
+   derived from just those two via color-mix(), so the user only has to
+   pick 2 colors instead of every individual card/border/table shade. */
+:root[data-theme="custom"] {
+    --card-bg: color-mix(in srgb, var(--bg) 85%, var(--fg));
+    --card-border: color-mix(in srgb, var(--bg) 55%, var(--fg));
+    --muted-bg: color-mix(in srgb, var(--bg) 92%, var(--fg));
+    --table-header-bg: color-mix(in srgb, var(--bg) 88%, var(--fg));
+    --link-color: color-mix(in srgb, var(--bg) 35%, var(--fg));
+    --input-bg: color-mix(in srgb, var(--bg) 90%, var(--fg));
+    --input-fg: var(--fg);
+    --input-border: color-mix(in srgb, var(--bg) 55%, var(--fg));
+}
+
+/* ============================================================
+   THEME APPLICATION
+   ============================================================ */
+html, body {
+    background: var(--bg) !important;
+    color: var(--fg) !important;
+}
+
+h1, h2, h3, h4, p, span, div, li {
+    color: var(--fg);
+}
+
+a { color: var(--link-color) !important; }
+
+hr { border-color: var(--card-border) !important; }
+
+table { background: var(--bg) !important; }
+th, td {
+    border-color: var(--card-border) !important;
+    color: var(--fg) !important;
+}
+th { background: var(--table-header-bg) !important; }
+tr:nth-child(even) td { background: color-mix(in srgb, var(--card-bg) 50%, var(--bg)) !important; }
+
+input, select, textarea, button {
+    background: var(--input-bg) !important;
+    color: var(--input-fg) !important;
+    border: 1px solid var(--input-border) !important;
+}
+
+.intel-box, .panel, .finding {
+    background: var(--muted-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.intel-item, .fix-item {
+    background: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    color: var(--fg) !important;
+}
+
+/* Generated chart PNGs are always rendered on a plain white
+   matplotlib canvas -- framing them keeps that intentional
+   (like a printed photo) instead of a jarring bright rectangle
+   floating on a dark page. */
+img[src^="/visualizations/charts/"] {
+    background: #ffffff;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--card-border);
+}
+
+/* Folium/Leaflet maps are separate documents rendered inside their
+   own iframe and always use a light basemap -- same framing
+   treatment as charts, just for the outer border. */
+iframe {
+    border: 1px solid var(--card-border) !important;
+    border-radius: 6px;
+}
+
+/* ============================================================
+   THEME TOGGLE BUTTON (injected by /static/theme.js)
+   ============================================================ */
+#theme-controls {
+    position: fixed;
+    top: 12px;
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#theme-toggle {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border) !important;
+    background: var(--card-bg) !important;
+    color: var(--fg) !important;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+}
+
+#theme-custom-picker {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border) !important;
+    background: var(--card-bg) !important;
+    color: var(--fg) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+#theme-custom-picker input[type="color"] {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    cursor: pointer;
+    background: none !important;
+}

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geographic Correlations</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>Geographic Correlations</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/behavior">Behavior</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<div class="intel-box">
+    Does where a router is located correlate with how outdated its version is, which
+    capabilities it runs, how much bandwidth it shares, or how long it stays up? This page
+    answers that directly -- countries below are ranked by router count, with average version
+    outdatedness, floodfill adoption, bandwidth tier, IPv6 adoption, and uptime shown side by
+    side. Only countries with at least 5 observed routers are included, to avoid single-router
+    noise dominating the percentages.
+</div>
+
+<div class="intel-box">
+    <b>Two different "how long has it been up" metrics are shown:</b> "Avg Uptime (h)" reflects
+    only how long <i>this pipeline</i> has continuously observed a router -- for a newly
+    discovered router that's necessarily close to zero, regardless of how long it's actually
+    existed. "Avg Days Since Published" instead uses the router's own self-reported RouterInfo
+    publish timestamp, a router-side signal independent of our observation window -- a more
+    honest proxy for recent activity that doesn't require a long collection period to become
+    meaningful.
+</div>
+
+{% if chi2_result %}
+<div class="intel-box">
+    <b>Multiple comparisons note:</b> three independent chi-square tests are run on this page
+    (version, floodfill, bandwidth) against the same country groupings. Testing three hypotheses
+    at the standard alpha = 0.05 inflates the true chance of a false positive somewhere across
+    the three above 5% -- each result below is also checked against a Bonferroni-corrected
+    threshold of alpha = {{ "%.4f"|format(chi2_result.bonferroni_alpha) }} (0.05 / 3), which is
+    what "still significant after correction" refers to.
+</div>
+
+<div class="intel-box">
+    <b>Statistical test:</b> chi-square test of independence on country x version (top
+    {{ chi2_result.n_countries }} countries by router count, {{ chi2_result.n_versions }}
+    distinct patch versions). chi2 = {{ "%.2f"|format(chi2_result.chi2) }},
+    p-value = {{ "%.4g"|format(chi2_result.p_value) }}, dof = {{ chi2_result.dof }}.
+    {% if chi2_result.significant %}
+        <b>This is statistically significant (p &lt; 0.05)</b> -- version distribution is not
+        independent of country in this dataset.
+        {% if chi2_result.significant_bonferroni %}
+            Still significant after Bonferroni correction.
+        {% else %}
+            <b>Does not survive Bonferroni correction</b> -- treat with caution given multiple tests.
+        {% endif %}
+    {% else %}
+        Not statistically significant at p &lt; 0.05 -- can't reject the possibility that
+        version distribution is independent of country here.
+    {% endif %}
+    <br><b>Effect size (Cramer's V):</b> {{ "%.3f"|format(chi2_result.cramers_v) }}
+    ({{ chi2_result.effect_size_label }}). With a sample this large, p-value alone can't
+    distinguish a real-but-trivial association from a substantial one -- Cramer's V (0-1 scale,
+    independent of sample size) is what actually says how strong the relationship is.
+</div>
+{% endif %}
+
+<hr>
+
+<h2>Router Type: Floodfill vs. Regular Peer</h2>
+<p>"Router type" in I2P's own architecture is primarily this distinction -- floodfill routers
+store/serve netDb entries to the rest of the network, regular peers don't. (This is different
+from "implementation" -- Java I2P vs. i2pd vs. I2P+ -- which is <b>not</b> reliably determinable
+from passive netDb data; see the note on the Risk page.)</p>
+<img src="/visualizations/charts/network_router_type.png" width="500">
+<h3>Router Type Adoption by Country</h3>
+<img src="/visualizations/charts/country_floodfill_pct.png" width="700">
+{% if floodfill_chi2_result %}
+<div class="intel-box">
+    <b>Statistical test:</b> chi-square test of independence on country x floodfill capability
+    (top {{ floodfill_chi2_result.n_countries }} countries). chi2 = {{ "%.2f"|format(floodfill_chi2_result.chi2) }},
+    p-value = {{ "%.4g"|format(floodfill_chi2_result.p_value) }}, dof = {{ floodfill_chi2_result.dof }}
+    ({{ "statistically significant" if floodfill_chi2_result.significant else "not statistically significant" }}
+    at p &lt; 0.05{{ ", still significant after Bonferroni correction" if floodfill_chi2_result.significant_bonferroni else "" }}).
+    Effect size: Cramer's V = {{ "%.3f"|format(floodfill_chi2_result.cramers_v) }}
+    ({{ floodfill_chi2_result.effect_size_label }}).
+</div>
+{% endif %}
+
+<h2>Bandwidth Class Evaluation</h2>
+<img src="/visualizations/charts/network_bandwidth_class.png" width="700">
+<h3>Bandwidth Class by Country</h3>
+<img src="/visualizations/charts/country_bandwidth_class.png" width="700">
+{% if bandwidth_chi2_result %}
+<div class="intel-box">
+    <b>Statistical test:</b> chi-square test of independence on country x bandwidth tier
+    (top {{ bandwidth_chi2_result.n_countries }} countries, {{ bandwidth_chi2_result.n_categories }}
+    bandwidth tiers). chi2 = {{ "%.2f"|format(bandwidth_chi2_result.chi2) }},
+    p-value = {{ "%.4g"|format(bandwidth_chi2_result.p_value) }}, dof = {{ bandwidth_chi2_result.dof }}
+    ({{ "statistically significant" if bandwidth_chi2_result.significant else "not statistically significant" }}
+    at p &lt; 0.05{{ ", still significant after Bonferroni correction" if bandwidth_chi2_result.significant_bonferroni else "" }}).
+    Effect size: Cramer's V = {{ "%.3f"|format(bandwidth_chi2_result.cramers_v) }}
+    ({{ bandwidth_chi2_result.effect_size_label }}).
+</div>
+{% endif %}
+
+<h2>Version Outdatedness by Country</h2>
+<img src="/visualizations/charts/country_version_risk.png" width="700">
+
+<h2>IPv6 Adoption by Country</h2>
+<img src="/visualizations/charts/country_ipv6_pct.png" width="700">
+
+<h2>Uptime by Country</h2>
+<img src="/visualizations/charts/country_uptime.png" width="700">
+
+<hr>
+
+<h2>Pure Geographic Clusters (DBSCAN)</h2>
+<p>Colored by geographic density alone (great-circle distance), not by behavior --
+routers within ~250km of a dense group share a color; gray markers are geographically
+isolated (not part of any cluster).</p>
+<iframe src="/visualizations/maps/geo_cluster_map.html" width="100%" height="600"></iframe>
+
+<h3>Does Geographic Clustering Predict Behavior?</h3>
+<p>Everything above treats geography and behavior as two separate stories. This tests whether
+they're actually connected: do routers grouped into the same geographic cluster also share
+similar risk/anomaly scores, more than chance would predict? Kruskal-Wallis H-test (non-parametric,
+no normality assumption) across all geo clusters with at least 5 routers, restricted to
+groups of that size. Effect size is epsilon-squared -- the share of the metric's variance
+explained by cluster membership, independent of sample size.</p>
+
+{% if geo_cluster_risk_test %}
+<div class="intel-box">
+    <b>Risk score by geo cluster:</b> H = {{ "%.2f"|format(geo_cluster_risk_test.h_stat) }},
+    dof = {{ geo_cluster_risk_test.dof }}, p-value = {{ "%.4g"|format(geo_cluster_risk_test.p_value) }}
+    ({{ geo_cluster_risk_test.n_clusters }} clusters, {{ geo_cluster_risk_test.n_routers }} routers).
+    {% if geo_cluster_risk_test.significant %}
+        <b>Statistically significant</b> -- risk score is not independent of geographic cluster.
+    {% else %}
+        Not statistically significant -- can't reject independence here.
+    {% endif %}
+    Effect size (epsilon-squared) = {{ "%.3f"|format(geo_cluster_risk_test.epsilon_sq) }}
+    ({{ geo_cluster_risk_test.effect_size_label }}).
+</div>
+{% endif %}
+
+{% if geo_cluster_anomaly_test %}
+<div class="intel-box">
+    <b>Anomaly score by geo cluster:</b> H = {{ "%.2f"|format(geo_cluster_anomaly_test.h_stat) }},
+    dof = {{ geo_cluster_anomaly_test.dof }}, p-value = {{ "%.4g"|format(geo_cluster_anomaly_test.p_value) }}
+    ({{ geo_cluster_anomaly_test.n_clusters }} clusters, {{ geo_cluster_anomaly_test.n_routers }} routers).
+    {% if geo_cluster_anomaly_test.significant %}
+        <b>Statistically significant</b> -- anomaly score is not independent of geographic cluster.
+    {% else %}
+        Not statistically significant -- can't reject independence here.
+    {% endif %}
+    Effect size (epsilon-squared) = {{ "%.3f"|format(geo_cluster_anomaly_test.epsilon_sq) }}
+    ({{ geo_cluster_anomaly_test.effect_size_label }}).
+</div>
+{% endif %}
+
+<hr>
+
+<h2>Full Country Breakdown</h2>
+
+<table>
+    <tr>
+        <th>Country</th>
+        <th>Routers</th>
+        <th>Avg Version Risk</th>
+        <th>% Floodfill</th>
+        <th>Avg BW Tier (0-3)</th>
+        <th>% IPv6</th>
+        <th>Avg Uptime (h)</th>
+        <th>Avg Days Since Published</th>
+        <th>Avg Risk Score</th>
+        <th>Details</th>
+    </tr>
+
+    {% for c in countries %}
+    <tr>
+        <td>{{ c.country }}</td>
+        <td>{{ c.router_count }}</td>
+        <td>{{ "%.4f"|format(c.avg_version_risk) }}</td>
+        <td>{{ "%.1f"|format(c.pct_floodfill) }}% <small>(95% CI: {{ "%.1f"|format(c.pct_floodfill_ci[0]) }}-{{ "%.1f"|format(c.pct_floodfill_ci[1]) }}%)</small></td>
+        <td>{{ "%.2f"|format(c.avg_bw_tier) }}</td>
+        <td>{{ "%.1f"|format(c.pct_ipv6) }}% <small>(95% CI: {{ "%.1f"|format(c.pct_ipv6_ci[0]) }}-{{ "%.1f"|format(c.pct_ipv6_ci[1]) }}%)</small></td>
+        <td>{{ "%.2f"|format(c.avg_uptime_hours) }}</td>
+        <td>{{ "%.4f"|format(c.avg_days_since_published) }}</td>
+        <td>{{ "%.4f"|format(c.avg_risk_score) }}</td>
+        <td><a href="/country/{{ c.country }}">View</a></td>
+    </tr>
+    {% endfor %}
+</table>
+<p><small>95% CI = Wilson score confidence interval. Wide intervals (common for countries near the
+5-router minimum) mean the point estimate carries real sampling uncertainty -- treat those
+percentages as noisy, not precise.</small></p>
+
+</body>
+</html>

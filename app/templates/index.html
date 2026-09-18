@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Network Overview</h2>
+
+<p><strong>Total Routers:</strong> {{ total_routers }}</p>
+
+{% if churn %}
+    <p><strong>New Routers (last hour):</strong> {{ churn["new_routers"] }}</p>
+    <p><strong>Disappeared Routers (last hour):</strong> {{ churn["disappeared_routers"] }}</p>
+{% else %}
+    <p>No churn data yet.</p>
+{% endif %}
+
+{% endblock %}
+

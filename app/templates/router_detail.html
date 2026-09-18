@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Router Intelligence Detail</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        .badge-low { background: #4CAF50; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-med { background: #FFC107; color: black; padding: 4px 7px; border-radius: 4px; }
+        .badge-high { background: #F44336; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-susp { background: #9C27B0; color: white; padding: 4px 7px; border-radius: 4px; }
+        .badge-cluster { background: #2196F3; color: white; padding: 4px 7px; border-radius: 4px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+
+        .section { margin-top: 30px; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>Router Intelligence: {{ info.router_hash }}</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn/{{ info.asn }}">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/behavior/{{ info.router_hash }}">Behavior</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<!-- ========================= -->
+<!--   INTELLIGENCE SUMMARY    -->
+<!-- ========================= -->
+
+<h2>Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Suspiciousness:</b> {{ "%.4f"|format(info.suspiciousness) }}</div>
+        <div class="intel-item"><b>Risk Score:</b> {{ "%.4f"|format(info.risk_score) }}</div>
+        <div class="intel-item"><b>Anomaly Score:</b> {{ "%.4f"|format(info.anomaly_score) }}</div>
+
+        <div class="intel-item"><b>Cluster:</b> {{ info.cluster_id }}</div>
+        <div class="intel-item"><b>Cluster Distance:</b> {{ "%.4f"|format(info.cluster_distance) }}</div>
+        <div class="intel-item"><b>Uptime Slope:</b> {{ "%.4f"|format(info.uptime_slope) }}</div>
+
+        <div class="intel-item"><b>ASN:</b> {{ info.asn }}</div>
+        <div class="intel-item"><b>Country:</b> {{ info.country }}</div>
+        <div class="intel-item"><b>Version:</b> {{ info.version }}</div>
+
+        <div class="intel-item"><b>Uptime (hrs):</b> {{ info.uptime_hours }}</div>
+        <div class="intel-item"><b>Last Seen:</b> {{ info.timestamp }}</div>
+        <div class="intel-item"><b>Risk Explanation:</b> {{ info.risk_explanation }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   BEHAVIORAL METRICS      -->
+<!-- ========================= -->
+
+<h2>Behavioral Metrics</h2>
+
+<table>
+    <tr><th>Entropy</th><td>{{ "%.4f"|format(info.entropy) }}</td></tr>
+    <tr><th>Periodicity</th><td>{{ "%.4f"|format(info.periodicity) }}</td></tr>
+    <tr><th>Stability</th><td>{{ "%.4f"|format(info.stability) }}</td></tr>
+    <tr><th>Uptime Slope</th><td>{{ "%.4f"|format(info.uptime_slope) }}</td></tr>
+    <tr><th>Cluster Distance</th><td>{{ "%.4f"|format(info.cluster_distance) }}</td></tr>
+</table>
+
+<p><a href="/behavior/{{ info.router_hash }}">View Full Behavioral Analysis →</a></p>
+
+<hr>
+
+<!-- ========================= -->
+<!--   CAPABILITIES            -->
+<!-- ========================= -->
+
+<h2>Capabilities</h2>
+
+<table>
+    <tr><th>IPv6</th><td>{{ "Yes" if caps.ipv6 else "No" }}</td></tr>
+    <tr><th>NTCP2</th><td>{{ "Yes" if caps.ntcp2 else "No" }}</td></tr>
+    <tr><th>SSU2</th><td>{{ "Yes" if caps.ssu2 else "No" }}</td></tr>
+    <tr><th>NTCP</th><td>{{ "Yes" if caps.ntcp else "No" }}</td></tr>
+    <tr><th>SSU</th><td>{{ "Yes" if caps.ssu else "No" }}</td></tr>
+    <tr><th>Peer Test</th><td>{{ "Yes" if caps.peer_test else "No" }}</td></tr>
+    <tr><th>Client Only</th><td>{{ "Yes" if caps.client else "No" }}</td></tr>
+    <tr><th>Version Flag</th><td>{{ "Yes" if caps.version_flag else "No" }}</td></tr>
+</table>
+
+<h3>Bandwidth</h3>
+<table>
+    <tr><th>Flag</th><td>{{ caps.bw_flag }}</td></tr>
+    <tr><th>Rate</th><td>{{ caps.bw_rate }}</td></tr>
+</table>
+
+<hr>
+
+<!-- ========================= -->
+<!--   ASN HISTORY             -->
+<!-- ========================= -->
+
+<h2>ASN History</h2>
+<table>
+    <tr><th>ASN</th><th>Name</th><th>Timestamp</th></tr>
+    {% for a in asn_history %}
+    <tr>
+        <td><a href="/asn/{{ a.asn }}">{{ a.asn }}</a></td>
+        <td>{{ a.as_org }}</td>
+        <td>{{ a.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<!-- ========================= -->
+<!--   COUNTRY HISTORY         -->
+<!-- ========================= -->
+
+<h2>Country History</h2>
+<table>
+    <tr><th>Country</th><th>Timestamp</th></tr>
+    {% for c in country_history %}
+    <tr>
+        <td>{{ c.country }}</td>
+        <td>{{ c.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<!-- ========================= -->
+<!--   RISK TIMELINE           -->
+<!-- ========================= -->
+
+<h2>Risk Timeline</h2>
+<table>
+    <tr><th>Risk Score</th><th>Timestamp</th></tr>
+    {% for r in risk_timeline %}
+    <tr>
+        <td>{{ "%.4f"|format(r.risk) }}</td>
+        <td>{{ r.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<!-- ========================= -->
+<!--   ANOMALY TIMELINE        -->
+<!-- ========================= -->
+
+<h2>Anomaly Timeline</h2>
+<table>
+    <tr><th>Score</th><th>Reason</th><th>Timestamp</th></tr>
+    {% for a in anomaly_timeline %}
+    <tr>
+        <td>{{ "%.4f"|format(a.score) }}</td>
+        <td>{{ a.reason }}</td>
+        <td>{{ a.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<!-- ========================= -->
+<!--   MOVEMENT HISTORY        -->
+<!-- ========================= -->
+
+<h2>Movement History (ASN + Country)</h2>
+<table>
+    <tr><th>ASN</th><th>Country</th><th>Timestamp</th></tr>
+    {% for m in movement %}
+    <tr>
+        <td>{{ m.asn }}</td>
+        <td>{{ m.country }}</td>
+        <td>{{ m.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<!-- ========================= -->
+<!--   ROUTER MAPS (ALL)       -->
+<!-- ========================= -->
+
+<h2>Geographic Intelligence Maps</h2>
+
+{% if has_geo %}
+<h3>Pin Map</h3>
+<iframe src="{{ maps.pin }}" width="100%" height="500" style="border:none;"></iframe>
+
+<h3>Movement Map</h3>
+<iframe src="{{ maps.movement }}" width="100%" height="500" style="border:none;"></iframe>
+
+<h3>Risk Map</h3>
+<iframe src="{{ maps.risk }}" width="100%" height="500" style="border:none;"></iframe>
+
+<h3>Suspicious Map</h3>
+<iframe src="{{ maps.suspicious }}" width="100%" height="500" style="border:none;"></iframe>
+
+<h3>Behavior Map</h3>
+<iframe src="{{ maps.behavior }}" width="100%" height="500" style="border:none;"></iframe>
+
+<h3>Cluster Distance Map</h3>
+<iframe src="{{ maps.cluster_distance }}" width="100%" height="500" style="border:none;"></iframe>
+{% else %}
+<p><b>No geolocation data available for this router's IP address.</b></p>
+{% endif %}
+
+</body>
+</html>
+

@@ -1,0 +1,208 @@
+k<!DOCTYPE html>
+<html>
+<head>
+    <title>Global Intelligence</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/theme.js" defer></script>
+
+    <style>
+        .panel {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+        iframe { border: none; margin-top: 10px; }
+
+        .intel-box { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .intel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .intel-item { background: white; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>Global Intelligence</h1>
+
+<nav>
+    <a href="/dashboard">Dashboard</a> |
+    <a href="/routers">Routers</a> |
+    <a href="/clusters">Clusters</a> |
+    <a href="/countries">Countries</a> |
+    <a href="/asn">ASN Intelligence</a> |
+    <a href="/anomalies">Anomalies</a> |
+    <a href="/risk">Risk</a> |
+    <a href="/suspicious">Suspicious</a> |
+    <a href="/behavior">Behavior</a> |
+    <a href="/maps">Maps</a> |
+    <a href="/geo-correlation">Geo Correlations</a> |
+    <a href="/vantage-comparison">Vantage Comparison</a> |
+    <a href="/methodology">Methodology</a> |
+    <a href="/movement">Movement</a> |
+    <a href="/summary">Summary</a>
+</nav>
+
+<hr>
+
+<!-- ========================= -->
+<!--   GLOBAL INTEL SUMMARY    -->
+<!-- ========================= -->
+
+<h2>Global Intelligence Summary</h2>
+
+<div class="intel-box">
+    <div class="intel-grid">
+
+        <div class="intel-item"><b>Total Routers:</b> {{ total_routers }}</div>
+        <div class="intel-item"><b>Total ASNs:</b> {{ asn_count }}</div>
+        <div class="intel-item"><b>Total Countries:</b> {{ country_count }}</div>
+        <div class="intel-item"><b>Total Clusters:</b> {{ cluster_count }}</div>
+
+        <div class="intel-item"><b>Avg Risk:</b> {{ "%.4f"|format(avg_risk) }}</div>
+        <div class="intel-item"><b>Avg Suspiciousness:</b> {{ "%.4f"|format(avg_suspicious) }}</div>
+        <div class="intel-item"><b>High‑Risk Routers:</b> {{ high_risk_count }}</div>
+        <div class="intel-item"><b>Suspicious Routers:</b> {{ suspicious_count }}</div>
+
+        <div class="intel-item"><b>Top ASN:</b> {{ top_asn }}</div>
+        <div class="intel-item"><b>Top Country:</b> {{ top_country }}</div>
+        <div class="intel-item"><b>Most Risky Cluster:</b> {{ top_cluster }}</div>
+        <div class="intel-item"><b>Behavioral Outliers:</b> {{ behavior_outliers }}</div>
+
+    </div>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   GLOBAL BEHAVIOR METRICS -->
+<!-- ========================= -->
+
+<h2>Global Behavioral Metrics</h2>
+
+<div class="panel">
+    <table>
+        <tr><th>Average Entropy</th><td>{{ "%.4f"|format(avg_entropy) }}</td></tr>
+        <tr><th>Average Periodicity</th><td>{{ "%.4f"|format(avg_periodicity) }}</td></tr>
+        <tr><th>Average Stability</th><td>{{ "%.4f"|format(avg_stability) }}</td></tr>
+        <tr><th>Average Uptime Slope</th><td>{{ "%.4f"|format(avg_uptime_slope) }}</td></tr>
+        <tr><th>Average Cluster Distance</th><td>{{ "%.4f"|format(avg_cluster_distance) }}</td></tr>
+    </table>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   TOP COUNTRIES           -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Top Countries</h2>
+    <table>
+        <tr><th>Country</th><th>Routers</th><th>Details</th></tr>
+        {% for c in top_countries %}
+        <tr>
+            <td>{{ c[0] }}</td>
+            <td>{{ c[1] }}</td>
+            <td><a href="/country/{{ c[0] }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   TOP ASNs                -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Top ASNs</h2>
+    <table>
+        <tr><th>ASN</th><th>Name</th><th>Routers</th><th>Details</th></tr>
+        {% for a in top_asns %}
+        <tr>
+            <td>{{ a[0] }}</td>
+            <td>{{ a[1] }}</td>
+            <td>{{ a[2] }}</td>
+            <td><a href="/asn/{{ a[0] }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   TOP CLUSTERS            -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Top Clusters</h2>
+    <table>
+        <tr><th>Cluster</th><th>Routers</th><th>Details</th></tr>
+        {% for c in top_clusters %}
+        <tr>
+            <td>{{ c[0] }}</td>
+            <td>{{ c[1] }}</td>
+            <td><a href="/cluster/{{ c[0] }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   GLOBAL VISUALIZATIONS   -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Global Visualizations</h2>
+
+    <h3>Risk Distribution</h3>
+    <img src="/visualizations/charts/global_risk.png" width="600">
+
+    <h3>Suspiciousness Distribution</h3>
+    <img src="/visualizations/charts/global_suspicious.png" width="600">
+
+    <h3>Router Count Over Time</h3>
+    <img src="/visualizations/charts/global_router_counts.png" width="600">
+
+    <h3>ASN Count Over Time</h3>
+    <img src="/visualizations/charts/global_asn_counts.png" width="600">
+</div>
+
+<hr>
+
+<!-- ========================= -->
+<!--   GLOBAL MAPS             -->
+<!-- ========================= -->
+
+<div class="panel">
+    <h2>Global Maps</h2>
+
+    <h3>Global Router Map</h3>
+    <iframe src="/visualizations/maps/global_map.html" width="100%" height="500"></iframe>
+
+    <h3>Global Risk Heatmap</h3>
+    <iframe src="/visualizations/maps/router_risk_heatmap.html" width="100%" height="500"></iframe>
+
+    <h3>Global Suspiciousness Heatmap</h3>
+    <iframe src="/visualizations/maps/suspicious_heatmap.html" width="100%" height="500"></iframe>
+
+    <h3>Global Cluster Map</h3>
+    <iframe src="/visualizations/maps/cluster_map.html" width="100%" height="500"></iframe>
+
+    <h3>Global ASN Map</h3>
+    <iframe src="/visualizations/maps/asn_risk_map.html" width="100%" height="500"></iframe>
+
+    <h3>Global Country Map</h3>
+    <iframe src="/visualizations/maps/country_heatmap.html" width="100%" height="500"></iframe>
+</div>
+
+</body>
+</html>
+

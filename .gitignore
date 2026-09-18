@@ -5,10 +5,13 @@ data/
 *.duckdb.wal
 suspicious_routers.csv
 
-# Generated output
-visualizations/
-visuals/
-charts/
+# Generated output (the visualization SOURCE in visualizations/ is tracked;
+# the hundreds of thousands of maps and charts it produces are not)
+visualizations/maps/*.html
+visualizations/charts/*.png
+visualizations/*.png
+/visuals/
+/charts/
 *.png
 !docs/figures/*.png
 

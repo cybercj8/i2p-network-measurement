@@ -47,6 +47,40 @@ undercounts the network by an amount it cannot measure from the inside.
 
 Figures are in [`docs/figures/`](docs/figures).
 
+## The dashboard
+
+The Flask application is how the results were actually explored. It is not
+included as a live demo, since it reads the database that is deliberately not
+published (see Data availability), but these are real pages from the study.
+
+**Global summary and provider concentration.** Note that two of the largest
+providers on the network are Iranian telecoms, which is where the geographic
+analysis started.
+
+![Dashboard overview](docs/screenshots/dashboard-overview.png)
+
+**Geospatial views.** Router distribution, risk and suspiciousness heatmaps,
+and behavioral clusters, all rendered from the same enriched table.
+
+![Global maps](docs/screenshots/global-maps.png)
+
+**Geographic correlation.** Each figure carries the statistical test behind it,
+including chi-square, degrees of freedom, Bonferroni-corrected significance,
+and the Cramér's V effect size, so a reader can judge the strength of the
+association rather than just its p-value.
+
+![Geographic correlation](docs/screenshots/geo-correlation.png)
+
+**Router inventory.** Every observed router with its behavioral metrics:
+suspiciousness, risk, anomaly score, cluster, entropy, periodicity, stability,
+uptime slope, and distance from its behavioral cluster centroid.
+
+![Router inventory](docs/screenshots/router-inventory.png)
+
+**Country intelligence.** Per-country aggregates across the same metrics.
+
+![Country intelligence](docs/screenshots/country-intelligence.png)
+
 ## Pipeline
 
 Nine stages, run end to end every 30 minutes:

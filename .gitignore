@@ -14,6 +14,7 @@ visualizations/*.png
 /charts/
 *.png
 !docs/figures/*.png
+!docs/screenshots/*.png
 
 # MaxMind GeoLite2 databases (not redistributable)
 *.mmdb

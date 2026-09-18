@@ -81,6 +81,15 @@ uptime slope, and distance from its behavioral cluster centroid.
 
 ![Country intelligence](docs/screenshots/country-intelligence.png)
 
+**On the "Unresolved" rows.** Just over half the observed network is IPv6-only,
+and MaxMind's GeoLite2 coverage is sparser for IPv6 than for IPv4. ASN resolves
+for 56% of routers and coordinates for 48%, so the unresolved bucket outranks
+every individual ASN and country, and every geographic result in this study is
+computed over that resolved subset rather than all 48,235 routers. This is a
+limitation of commercial geolocation data, not of the collection: every router
+observed here publishes a reachable address, and ASN and country are derived
+from it afterward rather than being something routers advertise.
+
 ## Pipeline
 
 Nine stages, run end to end every 30 minutes:

@@ -883,14 +883,21 @@ def routers():
         high_risk=q("SELECT COUNT(*) FROM router_features WHERE risk_score >= 0.45")[0][0],
         suspicious=q("SELECT COUNT(*) FROM router_features WHERE suspiciousness >= 0.30")[0][0],
         unstable=q("SELECT COUNT(*) FROM router_behavior WHERE entropy > 30")[0][0],
-        top_asn=q("""
+        # NULL legitimately wins both of these rankings: just over half the
+        # network is IPv6-only and GeoLite2 resolves fewer of those, so no
+        # single real ASN or country outranks the unresolved bucket. That is
+        # honest data, kept in the ranking and labeled rather than shown as
+        # Python's raw "None" (matching build_global_intel() and dashboard()).
+        top_asn=(lambda r: r[0][0] if r and r[0][0] is not None
+                 else "Unresolved (no ASN match)")(q("""
             SELECT asn FROM enriched_router_data
             GROUP BY asn ORDER BY COUNT(*) DESC LIMIT 1
-        """)[0][0],
-        top_country=q("""
+        """)),
+        top_country=(lambda r: r[0][0] if r and r[0][0] is not None
+                     else "Unresolved (no geolocation)")(q("""
             SELECT country_geo FROM enriched_router_data
             GROUP BY country_geo ORDER BY COUNT(*) DESC LIMIT 1
-        """)[0][0],
+        """)),
         cluster_count=q("SELECT COUNT(DISTINCT cluster_id) FROM router_behavior")[0][0],
         behavior_anomalies=q("""
             SELECT COUNT(*) FROM router_behavior WHERE cluster_distance >= 1.0
